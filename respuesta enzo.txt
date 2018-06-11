@@ -1,0 +1,27 @@
+Hola Lautaro,
+
+Te adjunto el dataset para que empiecen a mirarlo. Van a ver que ahí dentro hay varias carpetas:
+images: contiene las imágenes crudas. Cada imagen contiene 3 grupos de plantas. En las carpetas "masks1", "masks2" y "masks3" van a encontrar máscaras binarias rectangulares que les sirven para extrar, de cada imagen, el conjunto 1, 2 y 3 de plantas.
+
+gt1, gt2: son las segmentaciones manuales hechas directamente sobre las imagenes, por dos personas distintas, como para tener dos opiniones.
+
+gt1-segm, gt2-segm: son las mascaras binarias que representan las segmentaciones que deberían obtener.
+
+Hay también un archivo .xls con algunas estadísticas sobre la longitud de las raices, medidas a mano. No le presten atención a eso, sería util sólo en el caso que llegaran a medir la longitud de las raices.
+
+A partir de las imágenes, ustedes deberían:
+Segmentar la raiz (y evaluar la calidad de la segmentación usando Dice coefficient o alguna de las medidas que vimos ayer, teniendo en cuenta el Ground Truth provisto)
+
+Esqueletizar la segmentación
+
+Reconstruir el grafo que corresponde a esa raiz. En ese grafo, cada bifurcación de raices vendría a ser un nodo, asi como los puntos terminales de las raices que tmb serían un nodo. Dos nodos estarían entonces conectados si hay una raiz que los une. Idealmente, cada arco del grafo debería tener asociado la medida (en pixeles) de la longitud de ese tramo de raiz (esto no es necesario, sería algo deseable nomás).
+
+La idea es que exploren un poco la literatura sobre algoritmos de segmentación de estructuras tubulares (pueden googlear 'tubular structure segmentation', 'tree like structure segmentation' 'plant root segmentation' como para ver qué se ha hecho, y si pueden usar alguna de esas ideas) y lo apliquen a este problema. Seguramente el algoritmo no vaya a funcionar con un 100% de acierto; obviamente no es necesario que así sea.
+
+El paper que les mostré ayer es este: https://arxiv.org/pdf/1704.07793.pdf  De ahí pueden sacar las técnicas de pre-procesamiento que les permitirían eliminar las hojas de las raices.
+
+En cuanto al lenguaje, como les decía, ustedes son libres de elegir lo que quieran. Mi recomendación es usar matlab o python simplemente pq son lenguajes más amigables para laburar con procesamiento de imágenes. Pero es decisión de ustedes.
+
+Me avisan cualquier cosa,
+
+Saludos!
