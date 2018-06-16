@@ -18,8 +18,21 @@ def transitions(neighbours):
     n = neighbours + neighbours[0:1]      # P2, P3, ... , P8, P9, P2
     return sum( (n1, n2) == (0, 1) for n1, n2 in zip(n, n[1:]) )  # (P2,P3), (P3,P4), ... , (P8,P9), (P9,P2)
 
+def fillblanks(image):
+    img = image
+    height, width = img.shape
+    for i in range(1, width-1):
+        for j in range(1, height-1):
+            if (img[i,j] == 0):
+                n = neighbours(i,j,img)
+                if (numpy.sum(n) > 4):
+                    img[i,j] = 1
+    return img
+
+
 def skeletonize(image):
     "the Zhang-Suen Thinning Algorithm"
+    image = fillblanks(image)
     Image_Thinned = image.copy()  # deepcopy to protect the original image
     changing1 = changing2 = 1        #  the points to be removed (set as 0)
     while changing1 or changing2:   #  iterates until no further changes occur in the image
@@ -55,6 +68,6 @@ def skeletonize(image):
 filename = sys.argv[1]
 img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
 height, width = img.shape
-skeleton = zhangSuen(img/255)
+skeleton = skeletonize(img/255)
 cv2.imshow('skeleton',skeleton)
 cv2.waitKey()
