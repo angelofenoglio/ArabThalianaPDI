@@ -53,6 +53,19 @@ def ricci(image, windowRange):
     return output
 
 
+def eraseObjects(img, npixel):
+    objects = numpy.zeros(img.shape, numpy.uint8)
+    im2, contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    for i in range(len(contours)):
+        if (len(contours[i]) < npixel):
+            for j in range(len(contours[i])):
+                x = contours[i][j][0][0]
+                y = contours[i][j][0][1]
+                cv2.circle(objects, (x, y), 1, 255, -1)
+    img2 = img - objects
+    return img2
+
+
 filename = sys.argv[1]
 img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
 height, width = img.shape
@@ -163,7 +176,7 @@ avg = sum/count
 cv2.threshold(roots3, 3*avg, 1, cv2.THRESH_TOZERO, roots3)
 roots3 = ricci(roots3, [3,15])
 kernel = numpy.ones((3,3))/9
-cv2.filter2D(numpy.float32(roots3), -1, kernel, roots3)
+cv2.filter2D(roots3, -1, kernel, roots3)
 count = 0
 sum = 0
 for i in range(width):
@@ -182,17 +195,31 @@ roots2[: , mask2rect[0] + mask2rect[2]-10:mask2rect[0] + mask2rect[2]+5] = 0;
 roots3[: , mask3rect[0]-5:mask3rect[0] + 12] = 0;
 roots3[: , mask3rect[0] + mask3rect[2]-10:mask3rect[0] + mask3rect[2]+5] = 0;
 
+newRoots1 = numpy.zeros(roots1.shape)
+newRoots1 = eraseObjects(numpy.uint8(roots1*255), 20)
+newRoots1 = eraseObjects(numpy.uint8(newRoots1), 10)
+cv2.threshold(newRoots1, 250, 255, cv2.THRESH_BINARY, newRoots1)
+print ("Objetos borrados en roots1")
+
+newRoots2 = numpy.zeros(roots2.shape)
+newRoots2 = eraseObjects(numpy.uint8(roots2*255), 20)
+newRoots2 = eraseObjects(numpy.uint8(newRoots2), 10)
+cv2.threshold(newRoots2, 250, 255, cv2.THRESH_BINARY, newRoots2)
+print ("Objetos borrados en roots2")
+
+newRoots3 = numpy.zeros(roots3.shape)
+newRoots3 = eraseObjects(numpy.uint8(roots3*255), 20)
+newRoots3 = eraseObjects(numpy.uint8(newRoots3), 10)
+cv2.threshold(newRoots3, 250, 255, cv2.THRESH_BINARY, newRoots3)
+print ("Objetos borrados en roots3")
+
 print('Roots creadas y gris normalizado')
 print('Generando Imagenes...')
 riccifile1 = os.path.join(root, 'ricci/' + mask + '_ricci1.png')
 riccifile2 = os.path.join(root, 'ricci/' + mask + '_ricci2.png')
 riccifile3 = os.path.join(root, 'ricci/' + mask + '_ricci3.png')
-roots1 = roots1*255
-
-cv2.imwrite(riccifile1, roots1, (cv2.IMWRITE_PNG_COMPRESSION, 0))
-roots2 = roots2*255;
-cv2.imwrite(riccifile2, roots2, (cv2.IMWRITE_PNG_COMPRESSION, 0))
-roots3 = roots3*255
-cv2.imwrite(riccifile3, roots3, (cv2.IMWRITE_PNG_COMPRESSION, 0))
+cv2.imwrite(riccifile1, newRoots1, (cv2.IMWRITE_PNG_COMPRESSION, 0))
+cv2.imwrite(riccifile2, newRoots2, (cv2.IMWRITE_PNG_COMPRESSION, 0))
+cv2.imwrite(riccifile3, newRoots3, (cv2.IMWRITE_PNG_COMPRESSION, 0))
 cv2.waitKey()
 cv2.destroyAllWindows()
