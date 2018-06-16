@@ -53,7 +53,6 @@ def ricci(image, windowRange):
     return output
 
 
-
 filename = sys.argv[1]
 img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
 height, width = img.shape
@@ -103,6 +102,32 @@ roots3 = plant3 - leaves3
 roots1 = ( (roots1 - numpy.min(roots1)) / (numpy.max(roots1) - numpy.min(roots1)) )
 roots2 = ( (roots2 - numpy.min(roots2)) / (numpy.max(roots2) - numpy.min(roots2)) )
 roots3 = ( (roots3 - numpy.min(roots3)) / (numpy.max(roots3) - numpy.min(roots3)) )
+
+#Root 1
+count = 0
+sum = 0
+for i in range(width):
+    for j in range(height):
+        if (mask1[i,j] != 0):
+            sum = sum + roots1[i,j]
+            count = count + 1
+avg = sum/count
+cv2.threshold(roots1, 3*avg, 1, cv2.THRESH_TOZERO, roots1)
+roots1 = ricci(roots1, [3,15])
+kernel = numpy.ones((3,3))/9
+cv2.filter2D(roots1, -1, kernel, roots1)
+count = 0
+sum = 0
+for i in range(width):
+    for j in range(height):
+        if (mask1[i,j] != 0):
+            sum = sum + roots1[i,j]
+            count = count + 1
+avg = sum/count
+cv2.threshold(roots1, 4*avg, 1, cv2.THRESH_BINARY, roots1)
+print('Ricci 1 terminado')
+
+#Root2
 count = 0
 sum = 0
 for i in range(width):
@@ -124,19 +149,50 @@ for i in range(width):
             count = count + 1
 avg = sum/count
 cv2.threshold(roots2, 4*avg, 1, cv2.THRESH_BINARY, roots2)
-# print('Roots creadas y gris normalizado')
-# riccifile1 = os.path.join(root, 'ricci/' + mask + '_ricci1.png')
+print('Ricci 2 terminado')
+
+#Root 3
+count = 0
+sum = 0
+for i in range(width):
+    for j in range(height):
+        if (mask3[i,j] != 0):
+            sum = sum + roots3[i,j]
+            count = count + 1
+avg = sum/count
+cv2.threshold(roots3, 3*avg, 1, cv2.THRESH_TOZERO, roots3)
+roots3 = ricci(roots3, [3,15])
+kernel = numpy.ones((3,3))/9
+cv2.filter2D(numpy.float32(roots3), -1, kernel, roots3)
+count = 0
+sum = 0
+for i in range(width):
+    for j in range(height):
+        if (mask3[i,j] != 0):
+            sum = sum + roots3[i,j]
+            count = count + 1
+avg = sum/count
+cv2.threshold(roots3, 4*avg, 1, cv2.THRESH_BINARY, roots3)
+print('Ricci 3 terminado')
+
+roots1[: , mask1rect[0]-5:mask1rect[0] + 20] = 0;
+roots1[: , mask1rect[0] + mask1rect[2]-15:mask1rect[0] + mask1rect[2]+5] = 0;
+roots2[: , mask2rect[0]-5:mask2rect[0] + 12] = 0;
+roots2[: , mask2rect[0] + mask2rect[2]-10:mask2rect[0] + mask2rect[2]+5] = 0;
+roots3[: , mask3rect[0]-5:mask3rect[0] + 12] = 0;
+roots3[: , mask3rect[0] + mask3rect[2]-10:mask3rect[0] + mask3rect[2]+5] = 0;
+
+print('Roots creadas y gris normalizado')
+print('Generando Imagenes...')
+riccifile1 = os.path.join(root, 'ricci/' + mask + '_ricci1.png')
 riccifile2 = os.path.join(root, 'ricci/' + mask + '_ricci2.png')
-# riccifile3 = os.path.join(root, 'ricci/' + mask + '_ricci3.png')
-# ricci1 = ricci(roots1, 7)
-# ricci1 = ricci1*255
-# cv2.imwrite(riccifile1, ricci1, (cv2.IMWRITE_PNG_COMPRESSION, 0))
-# print('Ricci 1 terminado')
-roots2 = 255*roots2;
+riccifile3 = os.path.join(root, 'ricci/' + mask + '_ricci3.png')
+roots1 = roots1*255
+
+cv2.imwrite(riccifile1, roots1, (cv2.IMWRITE_PNG_COMPRESSION, 0))
+roots2 = roots2*255;
 cv2.imwrite(riccifile2, roots2, (cv2.IMWRITE_PNG_COMPRESSION, 0))
-# print('Ricci 2 terminado')
-# ricci3 = ricci(roots3, 7)
-# ricci3 = ricci3*255
-# cv2.imwrite(riccifile3, ricci3, (cv2.IMWRITE_PNG_COMPRESSION, 0))
-# print('Ricci 3 terminado')
+roots3 = roots3*255
+cv2.imwrite(riccifile3, roots3, (cv2.IMWRITE_PNG_COMPRESSION, 0))
 cv2.waitKey()
+cv2.destroyAllWindows()
