@@ -25,7 +25,7 @@ def fillblanks(image):
         for j in range(1, height-1):
             if (img[i,j] == 0):
                 n = neighbours(i,j,img)
-                if (numpy.sum(n) > 4):
+                if (numpy.sum(n) > 5):
                     img[i,j] = 1
     return img
 
@@ -65,9 +65,9 @@ def skeletonize(image):
             Image_Thinned[x][y] = 0
     return Image_Thinned
 
-filename = sys.argv[1]
-img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
-height, width = img.shape
-skeleton = skeletonize(img/255)
-cv2.imshow('skeleton',skeleton)
-cv2.waitKey()
+# filename = sys.argv[1]
+# img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
+# height, width = img.shape
+# skeleton = skeletonize(img/255)
+# cv2.imshow('skeleton',skeleton)
+# cv2.waitKey()
