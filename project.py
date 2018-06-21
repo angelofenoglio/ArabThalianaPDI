@@ -116,6 +116,8 @@ roots1 = ( (roots1 - numpy.min(roots1)) / (numpy.max(roots1) - numpy.min(roots1)
 roots2 = ( (roots2 - numpy.min(roots2)) / (numpy.max(roots2) - numpy.min(roots2)) )
 roots3 = ( (roots3 - numpy.min(roots3)) / (numpy.max(roots3) - numpy.min(roots3)) )
 
+cv2.imshow('despues', roots1)
+cv2.waitKey()
 #Root 1
 count = 0
 sum = 0
@@ -127,6 +129,8 @@ for i in range(width):
 avg = sum/count
 cv2.threshold(roots1, 3*avg, 1, cv2.THRESH_TOZERO, roots1)
 roots1 = ricci(roots1, [3,15])
+cv2.imshow('antes', roots1)
+cv2.waitKey()
 kernel = numpy.ones((3,3))/9
 cv2.filter2D(roots1, -1, kernel, roots1)
 count = 0

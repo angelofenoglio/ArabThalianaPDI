@@ -65,9 +65,18 @@ def skeletonize(image):
             Image_Thinned[x][y] = 0
     return Image_Thinned
 
-# filename = sys.argv[1]
-# img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
-# height, width = img.shape
-# skeleton = skeletonize(img/255)
-# cv2.imshow('skeleton',skeleton)
-# cv2.waitKey()
+def make_skeleton(input, output):
+    img = cv2.imread(input, cv2.IMREAD_GRAYSCALE)
+    height, width = img.shape
+    cv2.imshow('asasd',img)
+    skeleton = skeletonize(img/255)
+    cv2.imwrite(output, img, (cv2.IMWRITE_PNG_COMPRESSION, 0))
+
+
+filename = sys.argv[1]
+img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
+height, width = img.shape
+skeleton = skeletonize(img/255)
+cv2.imwrite('simpleskeleton2.png', skeleton, (cv2.IMWRITE_PNG_COMPRESSION, 0))
+cv2.imshow('skeleton',skeleton)
+cv2.waitKey()
