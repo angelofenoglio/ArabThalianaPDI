@@ -4,7 +4,6 @@ import cv2
 import sys
 import numpy
 from collections import deque
-import math
 
 
 def neighbours(x,y,image):
@@ -32,26 +31,81 @@ def getEndPoints(skeleton):
     endPoints = list()
     for i in range(1, width - 1):
         for j in range(1, height - 1):
-            if (skeleton[i,j] and numpy.sum(neighbours(i,j,skeleton)) == 1):
+            if skeleton[i,j] and numpy.sum(neighbours(i,j,skeleton)) == 1:
                 endPoints.append([i,j])
     return endPoints
 
 
-def intersectionPoints(nLabels, labels):
+def intersectionPoints(nLabels, labels, root):
     height, width = labels.shape
     intPoints = list()
-    # aca si el cluster tiene 3 o 4 pixeles sacar el centroide, deberia andar casi siempre
-    for label in range(1, nLabels):
+    label = 1
+    while label < nLabels:
         cluster = numpy.zeros_like(labels)
         cluster[numpy.where(labels == label)] = 1
-        clusterNeighbours = list()
+        clusterSize = numpy.sum(cluster)
+        points = list()
         for i in range(1, width - 1):
             for j in range(1, height - 1):
-                if (cluster[i, j]):
-                    clusterNeighbours.append([i, j, numpy.sum(neighbours(i, j, cluster))])
-        maxindx = numpy.argmax(clusterNeighbours, axis=0)
-        maxindx = maxindx[-1]
-        intPoints.append(clusterNeighbours[maxindx][0:2])
+                if cluster[i, j]:
+                    points.append([i, j])
+
+        if clusterSize > 5:
+            if clusterSize == 8:
+                a = 0
+            if len(numpy.unique([p[0] for p in points])) > len(numpy.unique([p[1] for p in points])):
+                max = numpy.max([p[0] for p in points])
+                min = numpy.min([p[0] for p in points])
+                col = 0
+            else:
+                max = numpy.max([p[1] for p in points])
+                min = numpy.min([p[1] for p in points])
+                col = 1
+            midPoint = (max+min)/2
+            newLabelPoints = 0
+            i = 0
+            while i < len(points):
+                if points[i][col] > midPoint:
+                    labels[points[i][0], points[i][1]] = nLabels
+                    points.remove(points[i])
+                    newLabelPoints += 1
+                    i -= 1
+                i += 1
+            nLabels += 1
+            clusterSize -= newLabelPoints
+
+        if clusterSize == 1:
+            intPoints.append(points[0])
+
+        if clusterSize == 2:
+            if len(numpy.unique([p[0] for p in points])) == 2 and len(numpy.unique([p[1] for p in points])) == 2:
+                if root[points[0][0], points[1][1]]:
+                    intPoints.append([points[0][0], points[1][1]])
+                elif root[points[1][0], points[0][1]]:
+                    intPoints.append([points[1][0], points[0][1]])
+                else:
+                    clusterSize = 5
+            else:
+                clusterSize = 5 #si ninguno de los dos casos funciona que se decida por vecinos
+
+        if 3 <= clusterSize <= 4:
+            p = numpy.sum(points, axis=0)
+            px = int(numpy.round(p[0]/len(points)))
+            py = int(numpy.round(p[1]/len(points)))
+            if [px, py] in points:
+                intPoints.append([px, py])
+            else:
+                clusterSize = 5
+
+        if clusterSize > 4:
+            clusterNeighbours = list()
+            for i in range(len(points)):
+                clusterNeighbours.append(numpy.sum(neighbours(points[i][0], points[i][1], cluster)))
+            maxindx = numpy.argmax(clusterNeighbours)
+            intPoints.append(points[maxindx])
+
+        label += 1 #endwhile
+
     return intPoints
 
 
@@ -126,6 +180,8 @@ filename = sys.argv[1]
 img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
 # img[408:415, 250:253] = 0
 # img[316:318, 271:273] = 0
+# img[367:369, 353:355] = 0
+# img[374:378, 349:352] = 0
 height, width = img.shape
 nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(numpy.uint8(img))
 largestLabels = numpy.argpartition(stats[1:-1,-1], -3)[-3:] + 1
@@ -139,21 +195,22 @@ label2 = numpy.uint8(label2)
 label3[numpy.where(labels == largestLabels[2])] = 1
 label3 = numpy.uint8(label3)
 
-roots = label1
+roots = label3
+# roots[319:323, 197:199] = 0
 
 endPoints = getEndPoints(roots)
 intsctl = list()
 for i in range(1, width - 1):
     for j in range(1, height - 1):
         if roots[i, j] and transitions(notSoNeighbours(i, j, roots)) > 2 and numpy.sum(neighbours(i, j, roots)) > 2:
-            intsctl.append((i,j))
+            intsctl.append((i, j))
 intersect = numpy.zeros_like(labels)
 for index in range(len(intsctl)):
     intersect[intsctl[index][0], intsctl[index][1]] = 1
 nintlabel, intlabels, intstats, centroids = cv2.connectedComponentsWithStats(numpy.uint8(intersect))
 
-interPoints = intersectionPoints(nintlabel, intlabels)
-#
+interPoints = intersectionPoints(nintlabel, intlabels, roots)
+
 # pointsPerLabel = list()
 # for label in range(1,nintlabel):
 #     pointsPerLabel.append(numpy.where(intlabels == label))
@@ -175,9 +232,19 @@ for index in range(len(endPoints)):
     label_hue[endPoints[index][0], endPoints[index][1]] = 50
 withintersect = cv2.merge([label_hue, blank, blank])
 withintersect = cv2.cvtColor(withintersect, cv2.COLOR_HSV2BGR)
-withintersect[roots==0] = 0
+withintersect[roots == 0] = 0
+
+# # Dibuja el grafo sobre la imagen
+# for edge in connections:
+#     p1 = tuple(reversed(nodes[edge[0]]))
+#     p2 = tuple(reversed(nodes[edge[1]]))
+#     cv2.line(withintersect, p1, p2, (255, 255, 255), 1)
+#     cv2.circle(withintersect, p1, 1, (100, 100, 100))
+#     cv2.circle(withintersect, p2, 1, (100, 100, 100))
+
 cv2.imshow('intersect',withintersect)
 
+## Esta parte muestra todas las labels en distintos colores
 # label_hue = numpy.uint8(179*labels/numpy.max(labels))
 # blank_ch = 255*numpy.ones_like(label_hue)
 # labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
