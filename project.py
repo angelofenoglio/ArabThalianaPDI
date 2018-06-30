@@ -116,8 +116,6 @@ roots1 = ( (roots1 - numpy.min(roots1)) / (numpy.max(roots1) - numpy.min(roots1)
 roots2 = ( (roots2 - numpy.min(roots2)) / (numpy.max(roots2) - numpy.min(roots2)) )
 roots3 = ( (roots3 - numpy.min(roots3)) / (numpy.max(roots3) - numpy.min(roots3)) )
 
-cv2.imshow('despues', roots1)
-cv2.waitKey()
 #Root 1
 count = 0
 sum = 0
@@ -129,8 +127,6 @@ for i in range(width):
 avg = sum/count
 cv2.threshold(roots1, 3*avg, 1, cv2.THRESH_TOZERO, roots1)
 roots1 = ricci(roots1, [3,15])
-cv2.imshow('antes', roots1)
-cv2.waitKey()
 kernel = numpy.ones((3,3))/9
 cv2.filter2D(roots1, -1, kernel, roots1)
 count = 0
@@ -155,8 +151,8 @@ for i in range(width):
 avg = sum/count
 cv2.threshold(roots2, 3*avg, 1, cv2.THRESH_TOZERO, roots2)
 roots2 = ricci(roots2, [3,15])
-kernel = numpy.ones((3,3))/9
-cv2.filter2D(roots2, -1, kernel, roots2)
+# kernel = numpy.ones((3,3))/9
+# cv2.filter2D(roots2, -1, kernel, roots2)
 count = 0
 sum = 0
 for i in range(width):
@@ -165,65 +161,67 @@ for i in range(width):
             sum = sum + roots2[i,j]
             count = count + 1
 avg = sum/count
-cv2.threshold(roots2, 4*avg, 1, cv2.THRESH_BINARY, roots2)
+# cv2.threshold(roots2, 4*avg, 1, cv2.THRESH_BINARY, roots2)
 print('Ricci 2 terminado')
 
-#Root 3
-count = 0
-sum = 0
-for i in range(width):
-    for j in range(height):
-        if (mask3[i,j] != 0):
-            sum = sum + roots3[i,j]
-            count = count + 1
-avg = sum/count
-cv2.threshold(roots3, 3*avg, 1, cv2.THRESH_TOZERO, roots3)
-roots3 = ricci(roots3, [3,15])
-kernel = numpy.ones((3,3))/9
-cv2.filter2D(roots3, -1, kernel, roots3)
-count = 0
-sum = 0
-for i in range(width):
-    for j in range(height):
-        if (mask3[i,j] != 0):
-            sum = sum + roots3[i,j]
-            count = count + 1
-avg = sum/count
-cv2.threshold(roots3, 4*avg, 1, cv2.THRESH_BINARY, roots3)
-print('Ricci 3 terminado')
+# #Root 3
+# count = 0
+# sum = 0
+# for i in range(width):
+#     for j in range(height):
+#         if (mask3[i,j] != 0):
+#             sum = sum + roots3[i,j]
+#             count = count + 1
+# avg = sum/count
+# # cv2.threshold(roots3, 3*avg, 1, cv2.THRESH_TOZERO, roots3)
+# roots3 = ricci(roots3, [3,15])
+# kernel = numpy.ones((3,3))/9
+# cv2.filter2D(roots3, -1, kernel, roots3)
+# count = 0
+# sum = 0
+# for i in range(width):
+#     for j in range(height):
+#         if (mask3[i,j] != 0):
+#             sum = sum + roots3[i,j]
+#             count = count + 1
+# avg = sum/count
+# # cv2.threshold(roots3, 4*avg, 1, cv2.THRESH_BINARY, roots3)
+# print('Ricci 3 terminado')
 
-roots1[: , mask1rect[0]-5:mask1rect[0] + 20] = 0;
-roots1[: , mask1rect[0] + mask1rect[2]-15:mask1rect[0] + mask1rect[2]+5] = 0;
-roots2[: , mask2rect[0]-5:mask2rect[0] + 12] = 0;
-roots2[: , mask2rect[0] + mask2rect[2]-10:mask2rect[0] + mask2rect[2]+5] = 0;
-roots3[: , mask3rect[0]-5:mask3rect[0] + 12] = 0;
-roots3[: , mask3rect[0] + mask3rect[2]-10:mask3rect[0] + mask3rect[2]+5] = 0;
+cv2.imshow('riici', roots2)
 
-newRoots1 = numpy.zeros(roots1.shape)
-newRoots1 = eraseObjects(numpy.uint8(roots1*255), 20)
-newRoots1 = eraseObjects(numpy.uint8(newRoots1), 10)
-cv2.threshold(newRoots1, 250, 255, cv2.THRESH_BINARY, newRoots1)
-print ("Objetos borrados en roots1")
-
-newRoots2 = numpy.zeros(roots2.shape)
-newRoots2 = eraseObjects(numpy.uint8(roots2*255), 20)
-newRoots2 = eraseObjects(numpy.uint8(newRoots2), 10)
-cv2.threshold(newRoots2, 250, 255, cv2.THRESH_BINARY, newRoots2)
-print ("Objetos borrados en roots2")
-
-newRoots3 = numpy.zeros(roots3.shape)
-newRoots3 = eraseObjects(numpy.uint8(roots3*255), 20)
-newRoots3 = eraseObjects(numpy.uint8(newRoots3), 10)
-cv2.threshold(newRoots3, 250, 255, cv2.THRESH_BINARY, newRoots3)
-print ("Objetos borrados en roots3")
-
-print('Roots creadas y gris normalizado')
-print('Generando Imagenes...')
-riccifile1 = os.path.join(root, 'segm/' + mask + '_segm1.png')
-riccifile2 = os.path.join(root, 'segm/' + mask + '_segm2.png')
-riccifile3 = os.path.join(root, 'segm/' + mask + '_segm3.png')
-cv2.imwrite(riccifile1, newRoots1, (cv2.IMWRITE_PNG_COMPRESSION, 0))
-cv2.imwrite(riccifile2, newRoots2, (cv2.IMWRITE_PNG_COMPRESSION, 0))
-cv2.imwrite(riccifile3, newRoots3, (cv2.IMWRITE_PNG_COMPRESSION, 0))
+# roots1[: , mask1rect[0]-5:mask1rect[0] + 20] = 0;
+# roots1[: , mask1rect[0] + mask1rect[2]-15:mask1rect[0] + mask1rect[2]+5] = 0;
+# roots2[: , mask2rect[0]-5:mask2rect[0] + 12] = 0;
+# roots2[: , mask2rect[0] + mask2rect[2]-10:mask2rect[0] + mask2rect[2]+5] = 0;
+# roots3[: , mask3rect[0]-5:mask3rect[0] + 12] = 0;
+# roots3[: , mask3rect[0] + mask3rect[2]-10:mask3rect[0] + mask3rect[2]+5] = 0;
+#
+# newRoots1 = numpy.zeros(roots1.shape)
+# newRoots1 = eraseObjects(numpy.uint8(roots1*255), 20)
+# newRoots1 = eraseObjects(numpy.uint8(newRoots1), 10)
+# cv2.threshold(newRoots1, 250, 255, cv2.THRESH_BINARY, newRoots1)
+# print ("Objetos borrados en roots1")
+#
+# newRoots2 = numpy.zeros(roots2.shape)
+# newRoots2 = eraseObjects(numpy.uint8(roots2*255), 20)
+# newRoots2 = eraseObjects(numpy.uint8(newRoots2), 10)
+# cv2.threshold(newRoots2, 250, 255, cv2.THRESH_BINARY, newRoots2)
+# print ("Objetos borrados en roots2")
+#
+# newRoots3 = numpy.zeros(roots3.shape)
+# newRoots3 = eraseObjects(numpy.uint8(roots3*255), 20)
+# newRoots3 = eraseObjects(numpy.uint8(newRoots3), 10)
+# cv2.threshold(newRoots3, 250, 255, cv2.THRESH_BINARY, newRoots3)
+# print ("Objetos borrados en roots3")
+#
+# print('Roots creadas y gris normalizado')
+# print('Generando Imagenes...')
+# riccifile1 = os.path.join(root, 'segm/' + mask + '_segm1.png')
+# riccifile2 = os.path.join(root, 'segm/' + mask + '_segm2.png')
+# riccifile3 = os.path.join(root, 'segm/' + mask + '_segm3.png')
+# cv2.imwrite(riccifile1, newRoots1, (cv2.IMWRITE_PNG_COMPRESSION, 0))
+# cv2.imwrite(riccifile2, newRoots2, (cv2.IMWRITE_PNG_COMPRESSION, 0))
+# cv2.imwrite(riccifile3, newRoots3, (cv2.IMWRITE_PNG_COMPRESSION, 0))
 cv2.waitKey()
 cv2.destroyAllWindows()
